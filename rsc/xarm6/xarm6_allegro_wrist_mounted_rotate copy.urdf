@@ -79,8 +79,8 @@
     <child link="link1"/>
     <origin rpy="0 0 0" xyz="0 0 0.267"/>
     <axis xyz="0 0 1"/>
-    <limit effort="500.0" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <limit effort="50.0" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
   <link name="link2">
     <visual>
@@ -108,7 +108,7 @@
     <origin rpy="-1.5708 0 0" xyz="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="50.0" lower="-2.059" upper="2.0944" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
   <link name="link3">
     <visual>
@@ -136,7 +136,7 @@
     <origin rpy="0 0 0" xyz="0.0535 -0.2845 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="32.0" lower="-3.927" upper="0.19198" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
   <link name="link4">
     <visual>
@@ -164,7 +164,7 @@
     <origin rpy="-1.5708 0 0" xyz="0.0775 0.3425 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="32.0" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
   <link name="link5">
     <visual>
@@ -192,7 +192,7 @@
     <origin rpy="1.5708 0 0" xyz="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="32.0" lower="-1.69297" upper="3.14159265359" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
   <link name="link6">
     <visual>
@@ -220,7 +220,7 @@
     <origin rpy="-1.5708 0 0" xyz="0.076 0.097 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="20.0" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
-    <dynamics damping="0.0001" friction="0.01"/>
+    <dynamics damping="1.0" friction="1.0"/>
   </joint>
 
   <joint name="gripper_base_joint" type="fixed">
@@ -281,7 +281,7 @@
     <parent link="palm_link"/>
     <child link="thumb_base"/>
     <origin rpy="0 -1.65806278845 -1.5707963259" xyz="-0.0182 0.019333 -0.045987"/>
-    <dynamics damping="0.0001" friction="0.035"/>
+    <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <link name="thumb_proximal">
     <visual>
@@ -309,7 +309,7 @@
     <parent link="thumb_base"/>
     <child link="thumb_proximal"/>
     <origin xyz="-0.027 0.005 0.0399"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 14] -->
   <link name="thumb_medial">
@@ -338,7 +338,7 @@
     <parent link="thumb_proximal"/>
     <child link="thumb_medial"/>
     <origin xyz="0 0 0.0177"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 15] -->
   <link name="thumb_distal">
@@ -367,7 +367,7 @@
     <parent link="thumb_medial"/>
     <child link="thumb_distal"/>
     <origin xyz="0 0 0.0514"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [FINGER TIP] -->
   <link name="thumb_tip">
@@ -419,7 +419,7 @@
     <parent link="palm_link"/>
     <child link="index_base"/>
     <origin rpy="-0.08726646255 0 0" xyz="0 0.0435 -0.001542"/> 
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 1, 5, 9] -->
   <link name="index_proximal">
@@ -447,7 +447,7 @@
     <parent link="index_base"/>
     <child link="index_proximal"/>
     <origin xyz="0 0 0.0164"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 2, 6, 10]-->
   <link name="index_medial">
@@ -474,7 +474,7 @@
     <parent link="index_proximal"/>
     <child link="index_medial"/>
     <origin xyz="0 0 0.054"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <link name="index_distal">
     <visual>
@@ -500,7 +500,7 @@
     <parent link="index_medial"/>
     <child link="index_distal"/>
     <origin xyz="0 0 0.0384"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [FINGER TIP] -->
   <link name="index_tip">
@@ -579,7 +579,7 @@
     <parent link="middle_base"/>
     <child link="middle_proximal"/>
     <origin xyz="0 0 0.0164"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 2, 6, 10]-->
   <link name="middle_medial">
@@ -606,7 +606,7 @@
     <parent link="middle_proximal"/>
     <child link="middle_medial"/>
     <origin xyz="0 0 0.054"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 3, 7, 11] -->
   <link name="middle_distal">
@@ -633,7 +633,7 @@
     <parent link="middle_medial"/>
     <child link="middle_distal"/>
     <origin xyz="0 0 0.0384"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <link name="middle_tip">
     <visual>
@@ -685,7 +685,7 @@
     <parent link="palm_link"/>
     <child link="ring_base"/>
     <origin rpy="0.08726646255 0 0" xyz="0 -0.0435 -0.001542"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 1, 5, 9] -->
   <link name="ring_proximal">
@@ -712,7 +712,7 @@
     <parent link="ring_base"/>
     <child link="ring_proximal"/>
     <origin xyz="0 0 0.0164"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 2, 6, 10]-->
   <link name="ring_medial">
@@ -739,7 +739,7 @@
     <parent link="ring_proximal"/>
     <child link="ring_medial"/>
     <origin xyz="0 0 0.054"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [LINK 3, 7, 11] -->
   <link name="ring_distal">
@@ -766,7 +766,7 @@
     <parent link="ring_medial"/>
     <child link="ring_distal"/>
     <origin xyz="0 0 0.0384"/>
-      <dynamics damping="0.0001" friction="0.035"/>
+      <dynamics damping="1.0" friction="0.035"/>
   </joint>
   <!-- [FINGER TIP] -->
   <link name="ring_tip">

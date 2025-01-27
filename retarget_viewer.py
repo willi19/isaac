@@ -5,12 +5,16 @@ import pickle
 from scipy.spatial.transform import Rotation as R
 import cv2
 import time
+from dex_robot.retargeting.retargeting_config import RetargetingConfig
+from numpy.lib.recfunctions import structured_to_unstructured
+
 
 # Viewer setting
 obj_name = "bottle"
 save_video = False
 view_physics = True
 view_replay = True
+view_handtip = True
 headless = False
 
 os.makedirs(f"video/{obj_name}", exist_ok=True)
@@ -25,7 +29,7 @@ def load_obj_traj(demo_path):
 
 def load_hand_pos(demo_path):
     # Load_target trajectory
-    target_traj = np.load(os.path.join(demo_path, "robot_qpos.npy"))
+    target_traj = np.load(os.path.join(demo_path, "hand_joint.npy"))
     return target_traj
 
 
@@ -102,43 +106,7 @@ def load_env(gym, sim, assets):
                 gymapi.MESH_VISUAL_AND_COLLISION,
                 gymapi.Vec3(0.4, 0.4, 0.6),
             )
-        # for finger_name in ["thumb", "index", "middle", "ring"]:
-        #     for joint_name in ["base", "proximal", "medial", "distal", "tip"]:
-        #         ind = gym.find_actor_rigid_body_index(
-        #             env,
-        #             actor_handle["robot_replay"],
-        #             f"{finger_name}_{joint_name}",
-        #             gymapi.DOMAIN_ACTOR,
-        #         )
-        #         gym.set_rigid_body_color(
-        #             env,
-        #             actor_handle["robot_replay"],
-        #             ind,
-        #             gymapi.MESH_VISUAL_AND_COLLISION,
-        #             gymapi.Vec3(0.4, 0.4, 0.6),
-        #         )
-        # for link_name in [
-        #     "link_base",
-        #     "link1",
-        #     "link2",
-        #     "link3",
-        #     "link4",
-        #     "link5",
-        #     "link6",
-        # ]:
-        #     ind = gym.find_actor_rigid_body_index(
-        #         env,
-        #         actor_handle["robot_replay"],
-        #         link_name,
-        #         gymapi.DOMAIN_ACTOR,
-        #     )
-        #     gym.set_rigid_body_color(
-        #         env,
-        #         actor_handle["robot_replay"],
-        #         ind,
-        #         gymapi.MESH_VISUAL_AND_COLLISION,
-        #         gymapi.Vec3(0.4, 0.4, 0.6),
-        #     )
+
         gym.set_rigid_body_color(
             env,
             actor_handle["object_replay"],
@@ -146,6 +114,13 @@ def load_env(gym, sim, assets):
             gymapi.MESH_VISUAL_AND_COLLISION,
             gymapi.Vec3(0.4, 0.4, 0.6),
         )
+
+    if view_handtip:
+        for i in range(5):
+            actor_handle[f"handtip_{i}"] = gym.create_actor(
+                env, assets["sphere"], object_pose, f"handtip_{i}", 4 + i, 0
+            )
+
     return env, actor_handle
 
 
@@ -239,12 +214,20 @@ def add_assets(gym, sim):
         sim, asset_root, robot_asset_file, vis_robot_asset_options
     )
 
+    sphere_asset_options = gymapi.AssetOptions()
+    sphere_asset_options.disable_gravity = True
+    sphere_asset_options.fix_base_link = True
+
+    sphere_asset = gym.create_sphere(sim, 0.01, sphere_asset_options)
+
     assets = {
         "robot": robot_asset,
         "object": object_asset,
         "vis_object": vis_object_asset,
         "vis_robot": vis_robot_asset,
+        "sphere": sphere_asset,
     }
+
     return assets
 
 
@@ -265,6 +248,14 @@ def load_camera(gym, env, width, height):
     return camera_handle
 
 
+def get_hand_tip_pos(hand_pos):
+    # tip index: 4, 9, 14, 19, 24
+    tip_idx = [4, 9, 14, 19, 0]
+    print(hand_pos.shape)
+    tip_pos = hand_pos[:, tip_idx]
+    return tip_pos
+
+
 # =================================================================================================
 gym = gymapi.acquire_gym()
 sim = generate_sim(gym)
@@ -279,6 +270,16 @@ if not headless:
 demo_path = f"data/human_demo/{obj_name}"
 demo_path_list = os.listdir(demo_path)
 
+# Load retargeting model
+dof_names_list = gym.get_asset_dof_names(assets["robot"])
+
+config_path = "teleop/xarm6_allegro_hand_right_position.yml"
+config = RetargetingConfig.load_from_file(config_path)
+config.set_default_target_joint_names(dof_names_list)
+
+vis_retarget_fn = config.build()
+phys_retarget_fn = config.build()
+
 if save_video:
     frame_width = 1920
     frame_height = 1080
@@ -286,17 +287,20 @@ if save_video:
     camera_handle = load_camera(gym, env, frame_width, frame_height)
     fourcc = cv2.VideoWriter_fourcc(*"XVID")  # Codec
 
-for demo_name in demo_path_list[:3]:
+for demo_name in demo_path_list[:30]:
     hand_pos = load_hand_pos(os.path.join(demo_path, demo_name))
-    obj_traj = load_obj_traj(os.path.join(demo_path, demo_name))[obj_name]
-    import pdb
+    traj_dict = load_obj_traj(os.path.join(demo_path, demo_name))
+    obj_traj = traj_dict[obj_name]
+    wrist_traj = traj_dict["right_wrist"]
 
-    pdb.set_trace()
-    # T = robot_target.shape[0]
+    T = hand_pos.shape[0]
+
+    handtip_pos_wf = get_hand_tip_pos(hand_pos)
+
     print("Demo name: ", demo_name)
 
     if save_video:
-        output_filename = f"{demo_name}.mp4"
+        output_filename = f"{demo_name}_retarget.mp4"
         out = cv2.VideoWriter(
             f"video/{obj_name}/{output_filename}",
             fourcc,
@@ -305,19 +309,26 @@ for demo_name in demo_path_list[:3]:
         )
 
     start = time.time()
-    for step in range(100):
+    for step in range(T):
         # Convert rotation matrix to quaternion
         rotmat = obj_traj[step][:3, :3]
         r = R.from_matrix(rotmat)
         quat = r.as_quat()  # [qx, qy, qz, qw]
 
         pos = obj_traj[step][:3, 3]
+        wrist_T = wrist_traj[step]
+        handtip_pos_rbf = (
+            wrist_T[:3, :3] @ handtip_pos_wf[step].T + wrist_T[:3, 3][:, None]
+        ).T  # robot base frame
 
-        action = robot_target[step].astype(np.float32)
+        # action = robot_target[step].astype(np.float32)
         # action[6:] = sim_to_real_allegro(action[6:])
         # action[6:] = adjust_finger_index(action[6:])
 
         if view_physics:
+            phys_action = phys_retarget_fn.retarget(handtip_pos_rbf[:, :]).astype(
+                np.float32
+            )
             if step == 0:
                 object_rb_state = gym.get_actor_rigid_body_states(
                     env, actor_handle["object"], gymapi.STATE_POS
@@ -332,22 +343,46 @@ for demo_name in demo_path_list[:3]:
                 robot_dof_state = gym.get_actor_dof_states(
                     env, actor_handle["robot"], gymapi.STATE_POS
                 )
-                robot_dof_state["pos"] = action
+                robot_dof_state["pos"] = phys_action
 
                 gym.set_actor_dof_states(
                     env, actor_handle["robot"], robot_dof_state, gymapi.STATE_POS
                 )
             if step != T - 1:
-                next_action = robot_target[step + 1].astype(np.float32)
-                gym.set_actor_dof_position_targets(
-                    env, actor_handle["robot"], next_action
+                # next_action = robot_target[step + 1].astype(np.float32)
+                pos_diff = phys_action - robot_dof_state["pos"]
+                vel = pos_diff * 60
+                ret = gym.set_actor_dof_velocity_targets(
+                    env, actor_handle["robot"], vel
                 )
 
+                gym.set_actor_dof_position_targets(
+                    env, actor_handle["robot"], phys_action
+                )
+
+                dof_states = gym.get_actor_dof_states(
+                    env, actor_handle["robot"], gymapi.STATE_ALL
+                )
+                positions = np.array([dof_state["pos"] for dof_state in dof_states])
+                velocities = np.array([dof_state["vel"] for dof_state in dof_states])
+
+                # Calculate torques based on a PID controller (as an example)
+                desired_positions = phys_action  # Target positions
+                kp, kd = 1000.0, 10.0  # Example gains
+                torques = (kp * (desired_positions - positions) - kd * velocities)[:6]
+                print(ret)
+                print((desired_positions - positions)[:6])
+                print(velocities[:6])
+                print(step)
+
         if view_replay:
+            vis_action = vis_retarget_fn.retarget(handtip_pos_rbf[:, :]).astype(
+                np.float32
+            )
             robot_dof_state = gym.get_actor_dof_states(
                 env, actor_handle["robot_replay"], gymapi.STATE_POS
             )
-            robot_dof_state["pos"] = action
+            robot_dof_state["pos"] = vis_action
 
             gym.set_actor_dof_states(
                 env, actor_handle["robot_replay"], robot_dof_state, gymapi.STATE_POS
@@ -363,12 +398,54 @@ for demo_name in demo_path_list[:3]:
                 env, actor_handle["object_replay"], object_rb_state, gymapi.STATE_POS
             )
 
+            robot_handtip_index = [
+                gym.find_actor_rigid_body_index(
+                    env, actor_handle["robot_replay"], tip_name, gymapi.DOMAIN_ACTOR
+                )
+                for tip_name in [
+                    "thumb_tip",
+                    "index_tip",
+                    "middle_tip",
+                    "ring_tip",
+                    "palm_link",
+                ]
+            ]
+
+        if view_handtip:
+
+            sphere_rb_state = gym.get_actor_rigid_body_states(
+                env, actor_handle["handtip_0"], gymapi.STATE_POS
+            )
+
+            for i in range(5):
+                sphere_rb_state["pose"]["p"].fill(
+                    (
+                        handtip_pos_rbf[i][0],
+                        handtip_pos_rbf[i][1],
+                        handtip_pos_rbf[i][2],
+                    )
+                )
+                gym.set_actor_rigid_body_states(
+                    env,
+                    actor_handle[f"handtip_{i}"],
+                    sphere_rb_state,
+                    gymapi.STATE_POS,
+                )
+
+            rigid_body_states = structured_to_unstructured(
+                gym.get_actor_rigid_body_states(
+                    env, actor_handle["robot"], gymapi.STATE_POS
+                )["pose"]["p"]
+            )
+
+            robot_handtip = rigid_body_states[robot_handtip_index]
         gym.simulate(sim)
         gym.fetch_results(sim, True)
 
         if not headless:
             gym.step_graphics(sim)
             gym.draw_viewer(viewer, sim, True)
+            gym.sync_frame_time(sim)
 
         if save_video:
             gym.render_all_camera_sensors(sim)

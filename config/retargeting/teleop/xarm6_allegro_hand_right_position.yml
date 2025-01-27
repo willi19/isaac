@@ -1,0 +1,8 @@
+retargeting:
+  type: position
+  urdf_path: xarm6/xarm6_allegro_wrist_mounted_rotate.urdf
+  objective_fn_args: 
+    target_link_names: [ "thumb_tip", "index_tip", "middle_tip", "ring_tip", "palm_link" ]
+
+  low_pass_alpha: 0.8
+  

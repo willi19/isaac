@@ -10,6 +10,7 @@ import yaml
 from dex_robot.retargeting.filter import LPFilter
 from dex_robot.retargeting.seq_retarget import SeqRetargeting
 from dex_robot.retargeting.optimizer import Optimizer
+from dex_robot.utils.file_io import rsc_path
 
 
 @dataclass  # This is decorator for dataclass
@@ -27,7 +28,7 @@ class RetargetingConfig:
     # Low pass filter
     low_pass_alpha: float = 0.1
 
-    _DEFAULT_URDF_DIR = "rsc/"
+    _DEFAULT_URDF_DIR = rsc_path
     target_joint_names: Optional[List[str]] = None
 
     def __post_init__(self):

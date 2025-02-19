@@ -29,6 +29,7 @@ class SeqRetargeting:
         self,
         optimizer=None,  # dex_robot.retargeting.optimizer.Optimizer
         lp_filter=None,  # dex_robot.retargeting.filter.LPFilter
+        init_qpos=None,
     ):
 
         self.optimizer = optimizer
@@ -43,6 +44,8 @@ class SeqRetargeting:
         self.init_qpos = joint_limits.mean(1)[self.optimizer.idx_pin2target].astype(
             np.float32
         )
+        if init_qpos is not None:
+            self.init_qpos = init_qpos
 
         self.last_qpos = self.init_qpos.copy()
         # for Allegro and XArm, we use the home values as the initial values
@@ -53,6 +56,9 @@ class SeqRetargeting:
 
         # Filter
         self.filter = lp_filter
+
+    def set_init_qpos(self, init_qpos):
+        self.init_qpos = init_qpos
 
     def retarget(self, ref_value):
         tic = time.perf_counter()
@@ -71,6 +77,17 @@ class SeqRetargeting:
 
         if self.filter is not None:
             robot_qpos = self.filter.next(robot_qpos)
+        return robot_qpos
+
+    def inverse_kinematics(self, target_pos):
+        qpos = self.optimizer.inverse_kinematics(target_pos, self.last_qpos)
+        self.last_qpos = qpos
+        robot_qpos = np.zeros(self.optimizer.robot.dof)
+        robot_qpos[self.optimizer.idx_pin2target] = qpos
+
+        if self.filter is not None:
+            robot_qpos = self.filter.next(robot_qpos)
+
         return robot_qpos
 
     def print_status(self):

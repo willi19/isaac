@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: dex_robot
+Version: 0.1
+Home-page: 
+Author: Mingi Choi
+Author-email: willi19@snu.ac.kr
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: pin>=2.7.0
+Requires-Dist: nlopt

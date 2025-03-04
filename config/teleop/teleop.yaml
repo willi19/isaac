@@ -10,4 +10,4 @@ hydra:
   run:  
     dir: .
 
-data_dir: "/home/yc4ny/isaac/data"
+data_dir: "/home/temp_id/isaac/data"

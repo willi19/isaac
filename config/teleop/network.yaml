@@ -1,4 +1,4 @@
-host_address: '192.168.0.21'
+host_address: '192.168.0.58'
 left_xarm_ip: '192.168.86.216'
 right_xarm_ip: '192.168.86.230'
 

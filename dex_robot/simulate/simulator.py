@@ -1,12 +1,9 @@
 import os
 import numpy as np
-from isaacgym import gymapi, gymtorch
+from isaacgym import gymapi
 import pickle
 from scipy.spatial.transform import Rotation as R
 import cv2
-import time
-from dex_robot.retargeting.retargeting_config import RetargetingConfig
-import transforms3d as t3d
 from ..utils.file_io import rsc_path
 
 
@@ -20,7 +17,9 @@ class simulator:
         headless=False,
         save_video=True,
         save_state=False,
+        fixed=False
     ):
+        self.fixed = fixed
         self.obj_name = obj_name
 
         self.view_physics = view_physics
@@ -42,6 +41,7 @@ class simulator:
         if not headless:
             self.set_viewer()
         self.step_idx = 0
+        
 
     def set_savepath(self, video_path, state_path):
         if self.save_video:
@@ -174,27 +174,6 @@ class simulator:
             robot_rb_state = self.gym.get_actor_rigid_body_states(
                 self.env, self.actor_handle["robot_replay"], gymapi.STATE_POS
             )
-
-            # 2. 링크 이름과 인덱스 매핑
-            rigid_body_names = self.gym.get_actor_rigid_body_names(
-                self.env, self.actor_handle["robot_replay"]
-            )
-
-            # 3. `link6`의 인덱스 찾기
-            link6_index = rigid_body_names.index("link6")
-
-            # 4. `link6`의 pose 가져오기
-            link6_pose = robot_rb_state["pose"][
-                link6_index
-            ]  # Pose 정보 (position & rotation)
-
-            # 5. 위치(Position)와 회전(Quaternion) 분리
-            # link6_position = link6_pose["p"]  # (x, y, z)
-            # link6_rotation = link6_pose["r"]  # (qx, qy, qz, qw)
-
-            # 6. 출력 확인
-            # print(f"Link6 Position: {link6_position}")
-            # print(f"Link6 Rotation (Quaternion): {link6_rotation}")
 
         if self.num_sphere > 0 and sphere_pos is not None:
             for i in range(self.num_sphere):
@@ -394,7 +373,11 @@ class simulator:
         self.assets = {}
 
         asset_root = rsc_path
-        robot_asset_file = "xarm6/xarm6_allegro_wrist_mounted_rotate.urdf"
+        if self.fixed:
+            robot_asset_file = "xarm6/xarm6_allegro_wrist_mounted_rotate.urdf"
+        else:
+            robot_asset_file = "xarm6/allegro.urdf"
+
         object_asset_file = f"{obj_name}/{obj_name}.urdf"
 
         if self.view_physics:

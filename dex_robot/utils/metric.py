@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-from .file_io import load_obj_traj, load_target_traj
+from dex_robot.utils.file_io import load_obj_traj, load_mesh
 
 # calcuate success rate, object distance, and robot distance
 
@@ -78,7 +78,25 @@ def is_pick_success(obj_traj, mesh):
     return False
 
 
-def get_pickplace_timing(height_traj):
+# def get_pickplace_timing(height_traj):
+#     pick = -1
+#     place = -1
+#     for i, h in enumerate(height_traj):
+#         if h > 0.01 and pick == -1:
+#             pick = i
+#         if h < 0.01 and pick != -1:
+#             place = i
+#             break
+#     return pick, place
+
+def get_pickplace_timing(obj_traj, mesh):
+    height_traj = []
+    T = len(obj_traj)
+    for step in range(T):
+        # Compute object heights
+        h = compute_mesh_to_ground_distance(obj_traj[step], mesh)
+        height_traj.append(h)
+
     pick = -1
     place = -1
     for i, h in enumerate(height_traj):
@@ -89,8 +107,41 @@ def get_pickplace_timing(height_traj):
             break
     return pick, place
 
+def get_grasp_timing(obj_traj, obj_name, robot_wrist_traj, robot_traj):
+    # obj_name = list(obj_traj.keys())[0]
+    T = len(obj_traj)
+
+    mesh = load_mesh(obj_name)
+    pick, place = get_pickplace_timing(obj_traj, mesh)
+
+    wrist_pose_obj = [np.linalg.inv(obj_traj[t]) @ robot_wrist_traj[t] for t in range(T)]
+    wrist_pose_obj = np.array(wrist_pose_obj)
+
+    grasping_position = np.mean(wrist_pose_obj[pick:place+1, :3, 3], axis=0)
+
+    grasping_pose = robot_traj[pick]
+    grasp_end = -1
+    grasp_start = -1
+
+    max_dist = 0
+    for t in range(pick, place+1):
+        dist = np.linalg.norm(robot_traj[t] - grasping_pose)
+        max_dist = max(max_dist, dist)
+    
+    for t in range(pick):
+        dist = np.linalg.norm(robot_traj[t] - grasping_pose)
+        if dist < max_dist:
+            grasp_end = t+1
+            break
+    for t in range(grasp_end-1, -1, -1):
+        dist = np.linalg.norm(wrist_pose_obj[t, :3, 3] - grasping_position)
+        if dist > 0.2:
+            grasp_start = t
+            break
+    return grasp_start, grasp_end
 
 if __name__ == "__main__":
+    from dex_robot.utils.file_io import load_obj_traj, load_robot_traj
     obj_name = "smallbowl1"
     sim_root_path = f"data/simulation/{obj_name}"  # Replace with your actual path
     sim_demo_path_list = os.listdir(sim_root_path)
@@ -107,11 +158,11 @@ if __name__ == "__main__":
 
         # Load trajectories
         sim_obj_traj = load_obj_traj(sim_demo_path)[obj_name]
-        sim_target_traj = load_target_traj(sim_demo_path)
+        sim_target_traj = load_robot_traj(sim_demo_path)
 
         teleop_demo_path = os.path.join(teleop_root_path, demo_name)
         teleop_obj_traj = load_obj_traj(teleop_demo_path)[obj_name]
-        teleop_target_traj = load_target_traj(teleop_demo_path)
+        teleop_target_traj = load_robot_traj(teleop_demo_path)
 
         if is_pick_success(teleop_obj_traj, mesh):
             success += 1

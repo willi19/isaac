@@ -226,7 +226,8 @@ class Optimizer:
             v = J.T.dot(np.linalg.solve(J.dot(J.T) + damp * np.eye(6), err))
             q = self.robot.integrate(q, v, DT)
             i += 1
-            print(np.linalg.norm(err))
+            # print(np.linalg.norm(err))
         if not success:
-            print("Inverse kinematics failed")
+            # print("Inverse kinematics failed")
+            pass
         return q

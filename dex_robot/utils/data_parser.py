@@ -30,3 +30,5 @@ def get_hand_tip_pos(hand_pos):
     tip_idx = [4, 9, 14, 19, 0]
     tip_pos = hand_pos[:, tip_idx]
     return tip_pos
+
+def target_pose_to_

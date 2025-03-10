@@ -23,16 +23,16 @@ if __name__ == "__main__":
         pose_data = data["hand_pose"]        
         state = data["state"]
         
-        for i in range(1,20):
-            pose_data[i] = np.linalg.inv(pose_data[0]) @ pose_data[i]
-        pose_data[0] = np.eye(4)
+        # for i in range(1,20):
+        #     pose_data[i] = np.linalg.inv(pose_data[0]) @ pose_data[i]
+        # pose_data[0] = np.eye(4)
         
         print(state)
 
         visualizer.update_sphere_positions(pose_data)
         time.sleep(0.01)  # Update at 20 FPS
     
-    xsens_updater.close_server()
+    xsens_updater.quit()
     visualizer.stop()
     print("Program terminated.")
     exit(0)

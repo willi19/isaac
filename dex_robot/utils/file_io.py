@@ -20,6 +20,7 @@ def load_obj_traj(demo_path):
 def load_robot_traj(demo_path):
     # Load robot trajectory
     robot_traj = np.load(os.path.join(demo_path, "robot_qpos.npy"))
+    
     return robot_traj
 
 
@@ -34,6 +35,10 @@ def load_hand_pos(demo_path):
     target_traj = np.load(os.path.join(demo_path, "hand_joint.npy"))
     return target_traj
 
+def load_hand_joint_pose(demo_path):
+    # Load hand joint pose
+    hand_joint_pose = pickle.load(open(os.path.join(demo_path, "hand_joint_pose.pickle"), "rb"))
+    return hand_joint_pose
 
 def load_mesh(obj_name):
     import open3d as o3d
@@ -42,3 +47,4 @@ def load_mesh(obj_name):
         os.path.join(rsc_path, obj_name, f"{obj_name}.obj")
     )
     return mesh
+

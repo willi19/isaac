@@ -103,3 +103,14 @@ class RobotWrapper:
 
     def integrate(self, q, v, dt):
         return pin.integrate(self.model, q, v * dt)
+
+    def get_all_link_poses(self):
+        """
+        Returns a dictionary with link names as keys and their homogeneous transformation matrices as values.
+        """
+        link_poses = {}
+        for frame in self.model.frames:
+            link_id = frame.id
+            pose: pin.SE3 = self.data.oMf[link_id]
+            link_poses[frame.name] = pose.homogeneous
+        return link_poses

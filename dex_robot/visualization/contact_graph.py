@@ -6,8 +6,9 @@ import subprocess
 from dex_robot.utils.file_io import load_contact_value
 from dex_robot.contact.process import process_contact
 from dex_robot.contact.index import sensor_name
+from dex_robot.visualization.convert_codec import change_to_h264
 
-def plot_contact_data(demo_path, output_video_path, time_range, sampling_rate, overwrite=False):
+def plot_contact_data(demo_path, output_video_path, time_range=30, sampling_rate=30, overwrite=False):
     """Plots contact sensor data and saves as a video using OpenCV (MP4) and converts to H.264 using FFmpeg."""
     try:
         contact_value = load_contact_value(os.path.join(demo_path))
@@ -75,25 +76,5 @@ def plot_contact_data(demo_path, output_video_path, time_range, sampling_rate, o
 
     # 비디오 저장 완료 후 해제
     out.release()
-    print(f"Temporary video saved: {temp_video_path}")
-
-    # ✅ FFmpeg을 사용하여 H.264로 변환
-    ffmpeg_cmd = [
-        "ffmpeg",
-        "-y",  # 기존 파일 덮어쓰기
-        "-i", temp_video_path,  # 입력 파일
-        "-c:v", "libx264",  # 비디오 코덱: H.264
-        "-preset", "slow",  # 압축률과 속도 조절 (slow = 고품질)
-        "-crf", "23",  # 품질 설정 (낮을수록 고품질, 18~23 추천)
-        "-pix_fmt", "yuv420p",  # 픽셀 포맷 (H.264 표준 호환)
-        output_video_path
-    ]
-
-    # FFmpeg 실행
-    try:
-        subprocess.run(ffmpeg_cmd, check=True)
-        print(f"✅ H.264 encoded video saved: {output_video_path}")
-        os.remove(temp_video_path)  # 변환 후 임시 파일 삭제
-    except subprocess.CalledProcessError as e:
-        print(f"❌ FFmpeg encoding failed: {e}")
+    change_to_h264(temp_video_path, output_video_path)
 

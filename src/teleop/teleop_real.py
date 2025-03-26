@@ -124,7 +124,7 @@ def main():
     camera_receiver = CameraManager(save_path, num_cameras=1, is_streaming=False, syncMode=True)
     camera_receiver.start()
     
-    traj_cnt = 5
+    traj_cnt = 2
     stop_event = threading.Event()
 
     input_thread = threading.Thread(target=listen_for_exit, args=(stop_event,))

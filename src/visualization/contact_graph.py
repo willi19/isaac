@@ -1,10 +1,6 @@
 import os
 import argparse
 from dex_robot.visualization.contact_graph import plot_contact_data
-max_time_seconds = 3  # Duration to plot in seconds
-sampling_rate = 30  # Adjust based on actual data rate (e.g., 100 Hz)
-frame_rate = 30  # Frames per second for the video
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -25,8 +21,4 @@ if __name__ == "__main__":
             if not args.overwrite and os.path.exists(output_video_path):
                 print(f"Skipping {demo_path} (video exists)")
                 continue
-            plot_contact_data(demo_path, output_video_path, sampling_rate, frame_rate)
-            # except Exception as e:
-            #     print(f"Error processing {demo_path}: {e}")
-            #     continue
-            # print(f"Processed {demo_path}")
+            plot_contact_data(demo_path, output_video_path)

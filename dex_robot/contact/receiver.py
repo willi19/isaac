@@ -70,6 +70,7 @@ class SerialReader():
             print("[INFO] Serial reader stopped.")
 
         os.makedirs(self.capture_path, exist_ok=True)
+        print(f"[INFO] Saving data to {self.capture_path}...")
         np.save(os.path.join(self.capture_path, f"data.npy"), self.data[:self.cnt])
         np.save(os.path.join(self.capture_path, f"timestamp.npy"), self.timestamp[:self.cnt])
         

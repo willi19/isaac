@@ -3,11 +3,12 @@ import os
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import shutil
 
 home_path = os.path.expanduser("~")
 shared_path = os.path.join(home_path, "shared_data")
 sensor_dict = {
-    # "contact": ["data"],
+    "contact": ["data"],
     "arm": ["state", "action"],
     "hand": ["state", "action"]
     }
@@ -61,13 +62,35 @@ if __name__ == '__main__':
     else:
         name_list = args.name
     for name in name_list:
-        print(name)
+        
         root_path = os.path.join(shared_path, 'capture', name)
         index_list = list(map(int, os.listdir(root_path)))
         index_list.sort()
 
         index_offset = 0
         for index in index_list:
+            c2r_dir = os.path.join(shared_path, "capture", name, str(index), "C2R.npy")
+            cam_param_dir = os.path.join(shared_path, "capture", name, str(index), "cam_param")
+
+            if not os.path.exists(c2r_dir):
+                print(f"{c2r_dir} not found")
+                continue
+            if not os.path.exists(cam_param_dir):
+                print(f"{cam_param_dir} not found")
+                continue
+            
+            for target_index in range(int(index)*5, int(index)*5+5):
+                target_dir = f"/home/temp_id/shared_data/processed/{name}/{target_index}"
+                if not os.path.exists(target_dir):
+                    continue
+                if not os.path.exists(f"{target_dir}/C2R.npy"):
+                    # os.remove(f"{target_dir}/C2R.npy")
+                    shutil.copy(c2r_dir, f"{target_dir}/C2R.npy")
+
+                if not os.path.exists(f"{target_dir}/cam_param"):
+                    # shutil.rmtree(f"{target_dir}/cam_param")
+                    shutil.copytree(cam_param_dir, f"{target_dir}/cam_param")
+
             capture_path = os.path.join(root_path, str(index))
             if not os.path.exists(os.path.join(capture_path, "camera_timestamp.json")):
                 print(f"camera_timestamp.json not found in {capture_path}")

@@ -12,6 +12,7 @@ rsc_path = os.path.join(
 home_path = os.path.expanduser("~")
 shared_path = os.path.join(home_path, "shared_data")
 capture_path = os.path.join(shared_path, "capture")
+download_path = os.path.join(home_path, "download")
 
 # # File io
 # def load_obj_traj(demo_path):

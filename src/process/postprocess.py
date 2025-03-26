@@ -4,7 +4,7 @@ from dex_robot.process.check_finished import check_finished
 from dex_robot.visualization.viz_path import *
 from dex_robot.visualization.plot import plot_final
 from paradex.utils.upload_file import copy_to_nfs, get_total_size
-from dex_robot.utils.file_io import shared_path, home_path
+from dex_robot.utils.file_io import shared_path, home_path, download_path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -13,10 +13,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.name is None:
-        args.name = os.listdir(f"{shared_path}/processed")
+        args.name = os.listdir(f"{download_path}/processed")
 
     for obj_name in args.name:
-        demo_path_root = f"{shared_path}/processed/{obj_name}"
+        demo_path_root = f"{download_path}/processed/{obj_name}"
         index_list = os.listdir(demo_path_root)
 
         for ind in index_list:

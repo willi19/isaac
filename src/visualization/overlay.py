@@ -33,13 +33,17 @@ if __name__ == "__main__":
             for proj_video in tqdm.tqdm(proj_video_list):
                 serial_num = proj_video.split(".")[0]
                 video_name = f"{serial_num}.avi"
+                out_path = f"video/overlay/{obj_name}/{index}/{serial_num}.mp4"
+
+                if not args.overwrite and os.path.exists(out_path):
+                    continue
 
                 proj_video = cv2.VideoCapture(f"video/projection/{obj_name}/{index}/{proj_video}")
                 video = cv2.VideoCapture(f"{root_path}/{obj_name}/{index}/video/{video_name}")
                 temp_path = f"video/overlay/{obj_name}/{index}/{serial_num}_temp.mp4"
                 out = cv2.VideoWriter(temp_path, cv2.VideoWriter_fourcc(*'mp4v'), 30, (w, h))
 
-                out_path = f"video/overlay/{obj_name}/{index}/{serial_num}.mp4"
+
                 int_mat = np.array(intrinsic[serial_num]['Intrinsics']).reshape(3,3)
                 old_int_mat = np.array([[int_mat[0,0], 0, w//2],[0, int_mat[0,0], h//2],[0, 0, 1]])
                 H = int_mat @ np.linalg.inv(old_int_mat)

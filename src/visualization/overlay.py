@@ -1,7 +1,6 @@
 import os
-from dex_robot.utils.file_io import load_camparam, load_robot_traj, load_c2r
+from dex_robot.utils.file_io import load_camparam, shared_path
 import numpy as np
-from dex_robot.simulate.simulator import simulator
 import tqdm
 import subprocess
 import argparse
@@ -15,10 +14,10 @@ if __name__ == "__main__":
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing files.")
     args = parser.parse_args()
     if args.name is None:
-        args.name = os.listdir("/home/temp_id/shared_data/processed")
+        args.name = os.listdir(f"{shared_path}/processed")
 
     
-    root_path = "/home/temp_id/shared_data/processed"
+    root_path = f"{shared_path}/processed"
     for obj_name in args.name:
         print(obj_name)
         index_list = os.listdir(f"{root_path}/{obj_name}")

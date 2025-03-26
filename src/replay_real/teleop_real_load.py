@@ -8,7 +8,7 @@ from dex_robot.utils import hand_index
 import time
 import threading
 from threading import Event
-from dex_robot.utils.file_io import load_robot_target_traj, rsc_path
+from dex_robot.utils.file_io_prev import load_robot_target_traj, rsc_path
 import os
 import chime
 from dex_robot.utils.robot_wrapper import RobotWrapper

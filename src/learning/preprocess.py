@@ -1,5 +1,5 @@
 from dex_robot.utils.metric import get_grasp_timing
-from dex_robot.utils.file_io import load_obj_traj, load_robot_traj, load_robot_target_traj, load_mesh, rsc_path
+from dex_robot.utils.file_io_prev import load_obj_traj, load_robot_traj, load_robot_target_traj, load_mesh, rsc_path
 import os
 import open3d as o3d
 from dex_robot.utils import robot_wrapper

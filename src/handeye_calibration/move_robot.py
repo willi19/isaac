@@ -56,7 +56,8 @@ class DexArmControl:
         self.arm.set_mode(0)  # 0: position control, 1: servo control
         self.arm.set_state(state=0)
 
-        self.home_robot()
+        
+        # self.home_robot()
 
     def move_arm(self, target_action):
         self.arm.set_position_aa(axis_angle_pose=target_action, wait=True, is_radian=True)
@@ -86,10 +87,8 @@ class DexArmControl:
 if __name__ == "__main__":
     dex_arm = DexArmControl()
     date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/robot", exist_ok=True)
-    os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/image", exist_ok=True)
-    
     home_pose = np.array([ 0.4917225,   0.12536007 , 0.12568464 ,-1.00128184 ,-1.49969864 ,-1.37346572])
+    
     for i in range(9):
         target_action = home_pose.copy()
         if i < 3:
@@ -103,13 +102,13 @@ if __name__ == "__main__":
         target_action[:3] *= 1000
 
         dex_arm.move_arm(target_action)
-        dex_arm.move_hand(allegro_angles=np.array(ALLEGRO_HOME_VALUES), interpolate=True)
+        dex_arm.move_hand(allegro_angles=np.array(ALLEGRO_HOME_VALUES))
         xarm_angles,allegro_angles = dex_arm.get_joint_values()
         
-        os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/image/{i}", exist_ok=True)
-        os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/robot/{i}", exist_ok=True)
+        os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/{i}/image", exist_ok=True)
+        # os.makedirs(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/{i}/robot", exist_ok=True)
 
-        np.save(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/robot/{i}", np.concatenate([xarm_angles[:6],allegro_angles]))
+        np.save(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/{i}/robot", np.concatenate([xarm_angles[:6],allegro_angles]))
 
         _ = input("Press Enter to continue...")
 

@@ -3,7 +3,7 @@ import time
 import pinocchio as pin
 from dex_robot.simulate.simulator import simulator
 from dex_robot.retargeting.retargeting_config import RetargetingConfig
-from dex_robot.utils.file_io import (
+from dex_robot.utils.file_io_prev import (
     load_robot_traj,
     load_obj_traj,
     load_robot_target_traj,

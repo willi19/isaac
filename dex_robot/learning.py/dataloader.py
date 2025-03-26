@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import os
 from dex_robot.utils import robot_wrapper
-from dex_robot.utils.file_io import load_obj_traj, load_robot_traj, load_robot_target_traj, load_hand_joint_pose
+from dex_robot.utils.file_io_prev import load_obj_traj, load_robot_traj, load_robot_target_traj, load_hand_joint_pose
 
 class RobotHandDataset(Dataset):
     def __init__(self, object_name, frame_type, finger_joint_list): 

@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-from dex_robot.utils.file_io import load_obj_traj, load_mesh
+from dex_robot.utils.file_io_prev import load_obj_traj, load_mesh
 
 # calcuate success rate, object distance, and robot distance
 
@@ -141,7 +141,7 @@ def get_grasp_timing(obj_traj, obj_name, robot_wrist_traj, robot_traj):
     return grasp_start, grasp_end
 
 if __name__ == "__main__":
-    from dex_robot.utils.file_io import load_obj_traj, load_robot_traj
+    from dex_robot.utils.file_io_prev import load_obj_traj, load_robot_traj
     obj_name = "smallbowl1"
     sim_root_path = f"data/simulation/{obj_name}"  # Replace with your actual path
     sim_demo_path_list = os.listdir(sim_root_path)

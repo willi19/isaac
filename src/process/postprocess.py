@@ -23,14 +23,14 @@ if __name__ == "__main__":
             if check_finished(obj_name, ind):
                 print(f"Skipping {obj_name}/{ind} (video exists)")
                 continue
-            try:
-                plot_final(obj_name, ind, args.overwrite)
-                source_path = f"video/final/{obj_name}/{ind}.mp4"
-                destination_path = f"{shared_path}/video/final/{obj_name}/{ind}.mp4"
-                total_size = get_total_size(source_path, destination_path)  
-                copy_to_nfs(source_path, destination_path, total_size)
+#             try:
+            plot_final(obj_name, ind, args.overwrite)
+            source_path = f"video/final/{obj_name}/{ind}.mp4"
+            destination_path = f"{shared_path}/video/final/{obj_name}/{ind}.mp4"
+            total_size = get_total_size(source_path, destination_path)  
+            copy_to_nfs(source_path, destination_path, total_size)
                                             
-            except:
-                print(f"Failed to plot {obj_name}/{ind}")
-                continue
+            # except:
+            #     print(f"Failed to plot {obj_name}/{ind}")
+            #     continue
 

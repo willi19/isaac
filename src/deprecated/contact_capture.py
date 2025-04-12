@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from dex_robot.robot_controller.robot_controller import DexArmControl
 from dex_robot.xsens.receiver import XSensReceiver
-from dex_robot.utils import hand_index
+from dex_robot.io.xsens import hand_index
 import time
 import threading
 import transforms3d as t3d

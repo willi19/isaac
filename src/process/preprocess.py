@@ -79,7 +79,7 @@ if __name__ == '__main__':
                 print(f"{cam_param_dir} not found")
                 continue
             
-            for target_index in range(int(index)*5, int(index)*5+5):
+            for target_index in range(int(index)*2, int(index)*2+2):
                 target_dir = f"/home/temp_id/shared_data/processed/{name}/{target_index}"
                 if not os.path.exists(target_dir):
                     continue
@@ -145,8 +145,8 @@ if __name__ == '__main__':
                         if not os.path.exists(os.path.join(save_path, str(tot_idx), sensor_name, data_name+".npy")):
                             done = False
                             break
-                if done:
-                    continue
+                # if done:
+                #     continue
 
                         
                 selected_sensor_value = {}
@@ -155,6 +155,8 @@ if __name__ == '__main__':
                     for data_name in sensor_dict[sensor_name]:
                         selected_sensor_value[sensor_name][data_name] = []
                 
+                # import pdb; pdb.set_trace()
+                diff_tmp = []
                 for (start, end) in range_list:
                     start_idx = start-1
                     end_idx = end-1
@@ -168,10 +170,12 @@ if __name__ == '__main__':
                                 ts += 1
                             sensor_idx_offset[sensor_name] = ts
                             selected_pc_time[sensor_name].append(sensor_timestamp[sensor_name][ts])
+                            if sensor_name == "arm":
+                                diff_tmp.append(np.abs(sensor_timestamp[sensor_name][ts] - t))
 
                             for data_name in sensor_dict[sensor_name]:
                                 selected_sensor_value[sensor_name][data_name].append(sensor_value[sensor_name][data_name][ts])
-
+                print(np.max(diff_tmp))
                 for sensor_name in list(sensor_dict.keys()):
                     os.makedirs(os.path.join(save_path, str(tot_idx), sensor_name), exist_ok=True)
                     for data_name in sensor_dict[sensor_name]:

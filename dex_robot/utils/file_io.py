@@ -6,6 +6,7 @@ import json
 rsc_path = os.path.join(
     os.path.dirname(__file__),
     "..",
+    "..",
     "rsc",
 )
 
@@ -49,8 +50,21 @@ def load_mesh(obj_name):
     return mesh
 
 def load_camparam(demo_path):
-    intrinsic = json.load(open(os.path.join(demo_path, "cam_param", "intrinsics.json"), "r"))
-    extrinsic = json.load(open(os.path.join(demo_path, "cam_param", "extrinsics.json"), "r"))
+    intrinsic_data = json.load(open(os.path.join(demo_path, "cam_param", "intrinsics.json"), "r"))
+    intrinsic = {}
+    for serial, values in intrinsic_data.items():
+        intrinsic[serial] = {
+            "intrinsics_original": np.array(values["original_intrinsics"]).reshape(3, 3),
+            "intrinsics_undistort": np.array(values["Intrinsics"]).reshape(3, 3),
+            "intrinsics_warped": np.array(values["Intrinsics_warped"]).reshape(3, 3),
+            "dist_params": np.array(values["dist_param"]),
+            "height": values["height"],  # Scalar values remain unchanged
+            "width": values["width"],
+        }
+    extrinsic_data = json.load(open(os.path.join(demo_path, "cam_param", "extrinsics.json"), "r"))
+    extrinsic = {}
+    for serial, values in extrinsic_data.items():
+        extrinsic[serial] = np.array(values).reshape(3, 4)
     return intrinsic, extrinsic
 
 def load_c2r(demo_path):

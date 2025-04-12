@@ -48,7 +48,7 @@ def plot_contact_graph_data(demo_path, output_video_path, time_range=3, sampling
 
     # **Figure 한 번만 생성**
     fig, ax = plt.subplots(figsize=(19.2, 10.8))  
-    ax.set_ylim(0, 550)
+    ax.set_ylim(0, 100)
     ax.set_xlabel("Time (seconds)")
     ax.set_ylabel("Contact Sensor Value")
     ax.set_title("Contact Sensor Readings")
@@ -173,7 +173,7 @@ def plot_contact(demo_path, output_video_path, overwrite=True):
         simulator.step(target_action, target_action, None)
         color_dict = {}
         for ri, ci in contact_sensor_idx.items():
-            val = contact_value[step, ci] / 500
+            val = contact_value[step, ci] / 100
             if val < 0:
                 val = 0
             if val > 1:
@@ -302,22 +302,13 @@ def plot_overlay(obj_name, index, overwrite=True):
         change_to_h264(temp_path, out_path)
 
 def plot_final(obj_name, index, overwrite=True):
-    if not overwrite and os.path.exists(f"video/final/{obj_name}/{index}.mp4"):
-        print(f"Skipping {obj_name}/{index} (video exists)")
-        return
+    # if not overwrite and os.path.exists(f"video/final/{obj_name}/{index}.mp4"):
+    #     print(f"Skipping {obj_name}/{index} (video exists)")
+    #     return
     
     demo_path = f"{download_path}/processed/{obj_name}/{index}"
     output_video_path = f"video/contact_graph/{obj_name}/{index}.mp4"
     plot_contact_graph_data(demo_path, output_video_path, overwrite=overwrite)
-
-    # output_video_path = f"video/contact/{obj_name}/{index}.mp4"
-    # Process.plot_contact(demo_path, output_video_path, overwrite=overwrite)
-    
-    # output_video_path = f"video/projection/{obj_name}/{index}"
-    # plot_projection(demo_path, output_video_path, overwrite=overwrite)
-
-    # output_video_path = f"video/pose/{obj_name}/{index}"
-    # plot_pose(demo_path, output_video_path, overwrite=overwrite)
 
     processes = []
 

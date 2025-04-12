@@ -1,19 +1,12 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
-from dex_robot.robot_controller.robot_controller import DexArmControl
-from dex_robot.xsens.receiver import XSensReceiver
-from dex_robot.utils import hand_index
+from dex_robot.io.robot_controller import XArmController
 import time
-import threading
 import transforms3d as t3d
 from dex_robot.utils.robot_wrapper import RobotWrapper
 import os
-from dex_robot.utils.file_io_prev import rsc_path,capture_path
-from dex_robot.contact.receiver import SerialReader
+from dex_robot.utils.file_io import rsc_path,capture_path
 import chime
-from dex_robot.camera.camera_loader import CameraManager
-import argparse
-import json
 
 home_wrist_pose = np.load("data/home_pose/allegro_eef_frame.npy")
 home_hand_pose = np.load("data/home_pose/allegro_hand_joint_angle.npy")
@@ -65,7 +58,7 @@ def get_latest_index(name):
     return str(len(files))
     
 robot = RobotWrapper(
-    os.path.join(rsc_path, "xarm6", "allegro.urdf")
+    os.path.join(rsc_path, "allegro", "allegro.urdf")
 )
 link_list = ["palm_link", "thumb_base", "thumb_proximal", "thumb_medial", "thumb_distal", "thumb_tip", 
              "index_base", "index_proximal", "index_medial", "index_distal", "index_tip", 
@@ -99,14 +92,12 @@ def safety_bound(target_action):
 arm_control_mode = "servo_cartesian_aa"
 
 def main():
-    arm_controller = DexArmControl("erasethis")
+    arm_controller = XArmController()
 
     init_robot_pose = home_wrist_pose.copy()
     cur_robot_pose = init_robot_pose.copy()
     
-    target_action = np.concatenate([homo2cart(cur_robot_pose), home_hand_pose])
-    target_action = safety_bound(target_action)
-    arm_controller.set_homepose(target_action[:6], target_action[6:])
+    arm_controller.set_homepose(homo2cart(cur_robot_pose))
     arm_controller.home_robot()
     home_start_time = time.time()
     while arm_controller.ready_array[0] != 1:

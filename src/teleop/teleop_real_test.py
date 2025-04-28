@@ -20,8 +20,8 @@ import json
 import shutil
 import transforms3d as t3d
 
-hand_name = "allegro"
-arm_name = "xarm"
+hand_name = None
+arm_name = None
 
 home_wrist_pose = np.array([[0, 1 ,0, 0.5],[0, 0, 1, -0.3],[1, 0, 0, 0.1],[0, 0, 0, 1]])
 
@@ -107,7 +107,7 @@ def main():
     print (f"save_path: {save_path}")
     sensors = initialize_teleoperation(save_path)
     
-    traj_cnt = 5
+    traj_cnt = 1
     stop_event = threading.Event()
 
     input_thread = threading.Thread(target=listen_for_exit, args=(stop_event,))
@@ -156,6 +156,7 @@ def main():
             try:
                 data = sensors["xsens"].get_data()
                 state = data["state"]
+                print(state)
                 if state == -1: # Xsens not ready
                     continue
 
@@ -163,13 +164,11 @@ def main():
                     if activate_start_time == -1:
                         activate_start_time = time.time()
 
-                    arm_action, hand_action = retargetor.get_action(data)
+                    # arm_action, hand_action = retargetor.get_action(data)
 
                 if state == 3:
                     if grasp_range[count]["grasp_start"] == -1:
                         grasp_range[count]["grasp_start"] = time.time()
-                
-                if state != 3 and grasp_range[count]["grasp_start"] != -1:
                     grasp_range[count]["grasp_end"] = time.time()    
                 
                 if state == 1 or state == 2:

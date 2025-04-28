@@ -1,10 +1,10 @@
 import os
 import time
 import pinocchio as pin
-from dex_robot.simulate.simulator import simulator
+from dex_robot.simulator.isaac import simulator
 from dex_robot.retargeting.retargeting_config import RetargetingConfig
-from dex_robot.utils.file_io_prev import (
-    load_robot_traj,
+from dex_robot.utils.file_io import (
+    load_robot_traj_prev,
     load_obj_traj,
     load_robot_target_traj,
 )
@@ -40,11 +40,11 @@ phys_retarget_fn = config.build()
 
 for demo_name in demo_path_list:
     demo_name = "1"
-    robot_traj = load_robot_traj(os.path.join(demo_path, demo_name))
+    robot_traj = load_robot_traj_prev(os.path.join(demo_path, demo_name))
     obj_traj = load_obj_traj(os.path.join(demo_path, demo_name))[obj_name]
-    target_traj = load_robot_target_traj(os.path.join(demo_path, demo_name))
+    # target_traj = load_robot_target_traj(os.path.join(demo_path, demo_name))
 
-    T = robot_traj.shape[0]
+    T = robot_traj.shape[0]#
     print("Demo name: ", demo_name)
 
     start = time.time()
@@ -60,7 +60,7 @@ for demo_name in demo_path_list:
         phys_retarget_fn.set_init_qpos(robot_traj[step])
         phys_retarget_fn.reset()
 
-        target_pose = load_robotwrist_pose(target_traj[step])
+        # target_pose = load_robotwrist_pose(target_traj[step])
         
         # print(robot_traj[0])
 

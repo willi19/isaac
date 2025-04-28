@@ -8,7 +8,6 @@ from dex_robot.utils.file_io import shared_path, load_camparam, load_c2r, downlo
 from paradex.utils.marker import detect_aruco, triangulate, ransac_triangulation
 import tqdm
 from dex_robot.utils.robot_wrapper import RobotWrapper
-from dex_robot.visualization.grid_image import grid_image
 
 def fill_framedrop(cam_timestamp):
     frameID = cam_timestamp["frameID"]
@@ -61,25 +60,22 @@ if __name__ == "__main__":
     parser.add_argument('--name', type=str, default=None)
     args = parser.parse_args()
 
-    # name_list = [args.name] if args.name else os.listdir(os.path.join(download_path, 'processed'))
-    name_list = [args.name]
+    name_list = [args.name] if args.name else os.listdir(os.path.join(download_path, 'processed'))
     
     robot = RobotWrapper(
         os.path.join(rsc_path, "xarm6", "xarm6_allegro_wrist_mounted_rotate.urdf")
     )
     link_index = robot.get_link_index("link5")
-    marker_id = [262,263,264,265,266, 11, 13, 14]
-
-    finger_marker = {11:"ring_proximal", 13:"middle_proximal", 14:"index_proximal", 10:"thumb_proximal"}
-    finger_index = {f"{finger_name}_proximal":robot.get_link_index(f"{finger_name}_proximal") for finger_name in ["thumb", "index", "middle", "ring"]}
-
 
     for name in name_list:
+        timestamp_list, capture_ind = load_timestamp(name)
         index_list = os.listdir(os.path.join(download_path, 'processed', name))
-        index_list.sort()
-        for index in index_list:
+        capture_process_ind = []
+
+        for index in ["1"]:
             root_path = os.path.join(download_path, 'processed', name, index)
-            
+            timestamp = timestamp_list[int(index)]
+
             intrinsic_list, extrinsic_list = load_camparam(root_path)
             cammat = {}
             for serial_num in list(intrinsic_list.keys()):
@@ -88,41 +84,71 @@ if __name__ == "__main__":
                 cammat[serial_num] = int_mat @ ext_mat
 
             c2r = load_c2r(root_path)
-            robot_action = np.load(os.path.join(root_path, "arm", "state.npy"))
-            hand_action = np.load(os.path.join(root_path, "hand", "state.npy"))
 
             marker_pose = np.load(os.path.join(root_path, "marker_pos.npy"), allow_pickle=True).item()
             
-            serial_list = [vid_name.split(".")[0] for vid_name in os.listdir(os.path.join(root_path, "video"))]
+            serial_list = list(intrinsic_list.keys())
+            seq_len = len(os.listdir(os.path.join(root_path, "video_extracted", serial_list[0])))
 
-            seq_len = 0#len(os.listdir(os.path.join(root_path, "video_extracted", serial_list[0])))
             for serial_num in serial_list:
-                img_list = [int(img_name.split(".")[0]) for img_name in os.listdir(os.path.join(root_path, "video_extracted", serial_num))]
-                seq_len = max(seq_len, max(img_list))
+                if len(os.listdir(os.path.join(root_path, "video_extracted", serial_num))) != seq_len:
+                    print("video_extracted error: ", serial_num)
+                    break
+            if len(timestamp) != seq_len:
+                print("timestamp error: ", len(timestamp), seq_len)
+                break
             
             os.makedirs(os.path.join(root_path, "marker3d"), exist_ok=True)
-
             for fid in tqdm.tqdm(range(seq_len)): 
-                if not os.path.exists(os.path.join(root_path, "marker3d", f"{fid:05d}.npy")):
-                    continue
-                marker_3d = np.load(os.path.join(root_path, "marker3d", f"{fid:05d}.npy"), allow_pickle=True).item()
-                
-                img_list = {}
+                id_cor = {}
+                # if os.path.exists(os.path.join(root_path, "marker3d", f"{i:05d}.npy")):
+                #     continue
+                for serial_num in serial_list:
+                    img = cv2.imread(os.path.join(root_path, "video_extracted", serial_num, f"{fid:05d}.jpeg"))
+                    intrinsic = intrinsic_list[serial_num]
+                    undistorted_img = cv2.undistort(img, intrinsic["intrinsics_original"], intrinsic["dist_params"], None, intrinsic["intrinsics_undistort"])
+                    undist_kypt, ids = detect_aruco(undistorted_img) # Tuple(np.ndarray(1, 4, 2)), np.ndarray(N, 1)
 
-                qpos = np.concatenate([robot_action[fid], hand_action[fid]])
-                robot.compute_forward_kinematics(qpos)
-                link5_pose = robot.get_link_pose(link_index)    
+                    if ids is None:
+                        continue
+                    
+                    ids = ids.reshape(-1)
+                    for id, k in zip(ids,undist_kypt):
+                        k = k.squeeze()
+                        if id not in id_cor:
+                            id_cor[id] = {"2d": [], "cammtx": []}
+                        id_cor[id]["2d"].append(k)
+                        id_cor[id]["cammtx"].append(cammat[serial_num])
                 
+                marker_id = [10, 11, 13, 14]
+                # cor_3d = {id:ransac_triangulation(np.array(id_cor[id]["2d"]), np.array(id_cor[id]["cammtx"])) if id in id_cor.keys() else None for id in marker_id}
+                cor_3d = {id:ransac_triangulation(np.array(id_cor[id]["2d"]), np.array(id_cor[id]["cammtx"])) for id in id_cor.keys()}
+
+                marker_3d = {}
+                for mid in marker_id:
+                    if mid not in cor_3d or cor_3d[mid] is None:
+                        continue
+                    marker_3d[mid] = cor_3d[mid]
+            
+                np.save(os.path.join(root_path, "marker3d", f"{fid:05d}.npy"), cor_3d)
                 for serial_num in serial_list:
                     intrinsic = intrinsic_list[serial_num]
-                    if not os.path.exists(os.path.join(root_path, "video_extracted", serial_num, f"{fid:05d}.png")):
+                    img = cv2.imread(os.path.join(root_path, "video_extracted", serial_num, f"{fid:05d}.jpeg"))
+                    undistort_img = cv2.undistort(img, intrinsic["intrinsics_original"], intrinsic["dist_params"])
+                    
+                    undist_kypt, ids = detect_aruco(undistort_img)
+                    if ids is None:
                         continue
-                    img = cv2.imread(os.path.join(root_path, "video_extracted", serial_num, f"{fid:05d}.png"))
-                    img_tmp = img.copy()
-
-                    for id in marker_id:
-                        if id not in marker_3d.keys():
+                    img_tmp = undistort_img.copy()
+                    show = False 
+                    for cor, id in zip(undist_kypt, ids):
+                        if id not in marker_id or int(id) not in marker_3d.keys():
                             continue
+                        cor = cor.squeeze().astype(int)
+                        
+                        cv2.putText(img_tmp, str(id), tuple(cor[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        for i in range(4):
+                            cv2.circle(img_tmp, tuple(cor[i]), 5, (0, 0, 255), -1)
                             
                         proj_mtx = cammat[serial_num]
                         pt_3d = marker_3d[int(id)]
@@ -132,46 +158,20 @@ if __name__ == "__main__":
                         for i in range(4):
                             pt_2d = proj_mtx @ pt_3d_hom[i].T
                             pt_2d = (pt_2d / pt_2d[2])[:2]
-                            cv2.circle(img_tmp, (int(pt_2d[0]),int(pt_2d[1])), 5, (255, 0, 0), -1)  # color blue 
-                            if i == 0:
-                                cv2.putText(img_tmp, str(id), (int(pt_2d[0]),int(pt_2d[1])), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                            cv2.circle(img_tmp, (int(pt_2d[0]),int(pt_2d[1])), 5, (255, 0, 0), -1)
+                        show = True
+                    if show:
+                        print(serial_num)
+                        img_tmp = cv2.resize(img_tmp, (1024, 768))
+                        cv2.imshow("original", img_tmp)
+                        cv2.waitKey(0)                        
+                        
+                    for id, corner in zip(ids, undist_kypt):
+                        corner = corner.squeeze().astype(int)
+                        cv2.putText(img_tmp, str(id), tuple(corner[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        for i in range(4):
+                            cv2.circle(img_tmp, tuple(corner[i]), 5, (0, 0, 255), -1)
 
-                        if id in [262, 263, 264, 265, 266]:
-                            marker_pose_h = c2r @ link5_pose @ marker_pose[int(id)]
-                            marker_pose_h /= marker_pose_h[-1]
-                            marker_pose_h = marker_pose_h[:3].T
-
-                            proj_mtx = cammat[serial_num]
-                            pt_3d_hom = np.concatenate([marker_pose_h, np.ones((4, 1))], axis=1)
-                            pt_2d = proj_mtx @ pt_3d_hom.T
-                            pt_2d = (pt_2d / pt_2d[2])[:2]
-                            pt_2d = pt_2d.T
-
-                            for i in range(4):
-                                cv2.circle(img_tmp, tuple(pt_2d[i].astype(int)), 5, (0, 255, 0), -1) # color green
-                        elif id in [11, 13, 14]:
-                            finger_pose = robot.get_link_pose(finger_index[finger_marker[id]])
-                            marker_pose_h = c2r @ finger_pose @ marker_pose[int(id)]
-                            marker_pose_h /= marker_pose_h[-1]
-                            marker_pose_h = marker_pose_h[:3].T
-                            proj_mtx = cammat[serial_num]
-                            pt_3d_hom = np.concatenate([marker_pose_h, np.ones((4, 1))], axis=1)
-                            pt_2d = proj_mtx @ pt_3d_hom.T
-                            pt_2d = (pt_2d / pt_2d[2])[:2]
-                            pt_2d = pt_2d.T
-                            for i in range(4):
-                                cv2.circle(img_tmp, tuple(pt_2d[i].astype(int)), 5, (0, 255, 0), -1)
-
-                    os.makedirs(os.path.join(root_path, "reproj", serial_num), exist_ok=True)
-                    cv2.imwrite(os.path.join(root_path, "reproj", serial_num, f"{fid:05d}.jpeg"), img_tmp)
-                    # img_list[serial_num] = img_tmp
-                # if len(img_list) == 0:
-                #     continue
-                # g_image = grid_image(img_list, serial_list)
-                # cv2.imshow("original", g_image)
-                # cv2.waitKey(0)
-                # os.makedirs(os.path.join(root_path, "reproj"), exist_ok=True)
-                # cv2.imwrite(os.path.join(root_path, "reproj", f"{fid:05d}.jpeg"), g_image)
                     # for mid in cor_3d.keys():
                     #     # if mid not in ids or cor_3d[mid] is None:
                     #     #     continue

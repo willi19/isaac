@@ -8,6 +8,8 @@ from numpy.linalg import inv
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from paradex.utils.math import rigid_transform_3D
+from dex_robot.utils.robot_wrapper import RobotWrapper
+from dex_robot.utils.file_io import rsc_path
 
 def logR(T):
     R = T[0:3, 0:3]
@@ -54,18 +56,41 @@ if __name__ == "__main__":
     index_list = os.listdir(os.path.join(he_calib_path))
     C2R = np.load(os.path.join(he_calib_path, "0", "C2R.npy"))
     marker_pos = {}
+    robot = RobotWrapper(
+        os.path.join(rsc_path, "xarm6", "xarm6_allegro_wrist_mounted_rotate.urdf")
+    )
+
+    marker_id_list = [261,262,263,264,265,266]
+    finger_id_list = [11,13,14]
+    finger_marker = {11:"ring_proximal", 13:"middle_proximal", 14:"index_proximal", 10:"thumb_proximal"}
+    finger_index = {f"{finger_name}_proximal":robot.get_link_index(f"{finger_name}_proximal") for finger_name in ["thumb", "index", "middle", "ring"]}
+
 
     for idx in index_list:
-        robot = np.load(os.path.join(he_calib_path, idx, "link5.npy"))
+        link5_pose = np.load(os.path.join(he_calib_path, idx, "link5.npy"))
         marker_dict = np.load(os.path.join(he_calib_path, idx, "marker_3d.npy"), allow_pickle=True).item()
+        robot_action = np.load(os.path.join(he_calib_path, idx, "robot.npy"))
+        
+        robot.compute_forward_kinematics(robot_action)
 
-        for mid in marker_dict:
+        for mid in marker_id_list:
+            if mid not in marker_dict:
+                continue
             if mid not in marker_pos:
                 marker_pos[mid] = []
             # marker_dict[mid] :4x3
-            marker_pos[mid].append(np.linalg.inv(robot) @ np.linalg.inv(C2R) @ np.hstack((marker_dict[mid], np.ones((marker_dict[mid].shape[0], 1)))).T)
-            
+            marker_pos[mid].append(np.linalg.inv(link5_pose) @ np.linalg.inv(C2R) @ np.hstack((marker_dict[mid], np.ones((marker_dict[mid].shape[0], 1)))).T)
+
+        for fid in finger_id_list:
+            if fid not in marker_dict:
+                continue
+            if fid not in marker_pos:
+                marker_pos[fid] = []
+            # marker_dict[mid] :4x3
+            finger_pose = robot.get_link_pose(finger_index[finger_marker[fid]])
+            marker_pos[fid].append(np.linalg.inv(finger_pose) @ np.linalg.inv(C2R) @ np.hstack((marker_dict[fid], np.ones((marker_dict[fid].shape[0], 1)))).T)
+
     for mid in marker_pos:
+        print(np.std(marker_pos[mid], axis=0), mid)
         marker_pos[mid] = np.mean(marker_pos[mid], axis=0)
-        
     np.save(os.path.join(he_calib_path, "0", "marker_pos.npy"), marker_pos)

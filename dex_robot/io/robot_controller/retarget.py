@@ -63,7 +63,7 @@ def safety_bound(target_action):
         min_z = min(min_z, link_pose[2,3])
     
     # print(max(0, 0.05 - min_z), min_z, link_min_name)
-    target_action[2] += max(0, 0.01 - min_z)
+    target_action[2] += max(0, -0.05 - min_z)
     return target_action
 
 class retargetor(): # Input is only from Xsens
@@ -158,6 +158,7 @@ class retargetor(): # Input is only from Xsens
                 v = rot_mat[1, 1]
                 v = max(-1, min(1, v))
                 allegro_angles[4*i+j+1] = np.arccos(v)
+            allegro_angles[4*i+1] *= 1.2
                 # allegro_angles[4*i+j+1] = np.arccos(rot_mat[1, 1])
                 
 

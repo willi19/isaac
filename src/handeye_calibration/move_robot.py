@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
         np.save(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/{i}/robot", np.concatenate([xarm_angles[:6],allegro_angles]))
 
-        _ = input("Press Enter to continue...")
+        _ = input(f"Press Enter to continue... {i}")
 
     dex_arm.quit()    
     copy_calib_files(f"/home/temp_id/shared_data/handeye_calibration/{date_str}/0")

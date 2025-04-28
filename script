@@ -1,3 +1,4 @@
 source /opt/ros/noetic/setup.bash
 source ~/ws/robot_controller/devel/setup.bash
+conda activate robot
 roslaunch allegro_hand allegro_hand.launch VISUALIZE:=true AUTO_CAN:=false CAN_DEVICE:=/dev/pcan32

@@ -10,7 +10,7 @@ import yaml
 from dex_robot.retargeting.filter import LPFilter
 from dex_robot.retargeting.seq_retarget import SeqRetargeting
 from dex_robot.retargeting.optimizer import Optimizer
-from dex_robot.utils.file_io_prev import rsc_path
+from dex_robot.utils.file_io import rsc_path
 
 
 @dataclass  # This is decorator for dataclass

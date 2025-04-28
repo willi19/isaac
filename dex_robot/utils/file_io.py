@@ -16,10 +16,10 @@ capture_path = os.path.join(shared_path, "capture")
 download_path = os.path.join(home_path, "download")
 
 # # File io
-# def load_obj_traj(demo_path):
-#     # Load object trajectory
-#     obj_traj = pickle.load(open(os.path.join(demo_path, "obj_traj.pickle"), "rb"))
-#     return obj_traj
+def load_obj_traj(demo_path):
+    # Load object trajectory
+    obj_traj = pickle.load(open(os.path.join(demo_path, "obj_traj.pickle"), "rb"))
+    return obj_traj
 
 
 def load_robot_traj(demo_path):
@@ -29,6 +29,13 @@ def load_robot_traj(demo_path):
     robot_traj = np.concatenate([arm_traj, hand_traj], axis=-1)
 
     return robot_traj
+
+def load_robot_traj_prev(demo_path):
+    # Load robot trajectory
+    arm_traj = np.load(os.path.join(demo_path, "robot_qpos.npy"))
+    # robot_traj = np.concatenate([arm_traj, hand_traj], axis=-1)
+
+    return arm_traj
 
 
 def load_robot_target_traj(demo_path):

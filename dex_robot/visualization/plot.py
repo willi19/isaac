@@ -4,14 +4,14 @@ import os
 import cv2
 import subprocess
 from dex_robot.utils.file_io import load_contact_value, download_path
-from dex_robot.contact.process import process_contact
-from dex_robot.contact.index import sensor_name
+from dex_robot.io.contact.process import process_contact
+from dex_robot.io.contact.index import sensor_name
 from dex_robot.visualization.convert_codec import change_to_h264
 from dex_robot.utils.file_io import load_camparam, load_robot_traj, load_c2r
 import tqdm
-from dex_robot.contact.index import sensor_name, contact_sensor_idx
+from dex_robot.io.contact.index import sensor_name, contact_sensor_idx
 from paradex.utils.merge_video import merge_video_synced
-from dex_robot.simulate.simulator import simulator as sim
+from dex_robot.simulator.isaac import simulator as sim
 from multiprocessing import Process
 
 def plot_contact_graph_data(demo_path, output_video_path, time_range=3, sampling_rate=30, overwrite=True):
@@ -315,8 +315,8 @@ def plot_final(obj_name, index, overwrite=True):
     p1 = Process(target=plot_contact, args=(demo_path, f"video/contact/{obj_name}/{index}.mp4", overwrite))
     processes.append(p1)
 
-    p2 = Process(target=plot_projection, args=(demo_path, f"video/projection/{obj_name}/{index}", overwrite))
-    processes.append(p2)
+    # p2 = Process(target=plot_projection, args=(demo_path, f"video/projection/{obj_name}/{index}", overwrite))
+    # processes.append(p2)
 
     p3 = Process(target=plot_pose, args=(demo_path, f"video/pose/{obj_name}/{index}.mp4", overwrite))
     processes.append(p3)
@@ -326,16 +326,16 @@ def plot_final(obj_name, index, overwrite=True):
         p.join()
 
 
-    plot_overlay(obj_name, index, overwrite=overwrite)
+    # plot_overlay(obj_name, index, overwrite=overwrite)
 
-    os.makedirs(f"video/overlay_grid/{obj_name}", exist_ok=True)
+    os.makedirs(f"video/grid/{obj_name}", exist_ok=True)
 
-    if not os.path.exists(f"video/overlay_grid/{obj_name}/{index}.mp4"):
-        merge_video_synced(f"video/overlay/{obj_name}/{index}", f"video/overlay_grid/{obj_name}/{index}.mp4")
+    if not os.path.exists(f"video/grid/{obj_name}/{index}.mp4"):
+        merge_video_synced(f"{demo_path}/video", f"video/grid/{obj_name}/{index}.mp4")
 
     pose_video = cv2.VideoCapture(f"video/pose/{obj_name}/{index}.mp4")
     contact_video = cv2.VideoCapture(f"video/contact/{obj_name}/{index}.mp4")
-    grid_video = cv2.VideoCapture(f"video/overlay_grid/{obj_name}/{index}.mp4")
+    grid_video = cv2.VideoCapture(f"video/grid/{obj_name}/{index}.mp4")
     graph_video = cv2.VideoCapture(f"video/contact_graph/{obj_name}/{index}.mp4")
 
     os.makedirs(f"video/final/{obj_name}", exist_ok=True)

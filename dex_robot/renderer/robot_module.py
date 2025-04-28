@@ -70,7 +70,7 @@ class robot_info(Mesh_Object):
         # Extract robot name
         robot = dom.getElementsByTagName("robot")[0]
         robot_name = robot.getAttribute("name")
-        print(f"Robot Name: {robot_name}")
+        # print(f"Robot Name: {robot_name}")
 
         # extract material
         materials = [node for node in robot.childNodes if node.nodeName == "material"]
@@ -84,7 +84,7 @@ class robot_info(Mesh_Object):
 
         # Extract Joints
         joints = dom.getElementsByTagName("joint")
-        print("\nJoints:")
+        # print("\nJoints:")
         
         for joint in joints:
             joint_name = joint.getAttribute("name")

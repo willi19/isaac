@@ -102,14 +102,14 @@ if __name__ == "__main__":
             
             os.makedirs(os.path.join(root_path, "marker3d"), exist_ok=True)
 
-            for fid in tqdm.tqdm(range(seq_len)): 
+            for fid in tqdm.tqdm(range(3, seq_len)): 
                 if not os.path.exists(os.path.join(root_path, "marker3d", f"{fid:05d}.npy")):
                     continue
                 marker_3d = np.load(os.path.join(root_path, "marker3d", f"{fid:05d}.npy"), allow_pickle=True).item()
                 
                 img_list = {}
 
-                qpos = np.concatenate([robot_action[fid], hand_action[fid]])
+                qpos = np.concatenate([robot_action[fid-3], hand_action[fid-3]])
                 robot.compute_forward_kinematics(qpos)
                 link5_pose = robot.get_link_pose(link_index)    
                 
@@ -162,8 +162,8 @@ if __name__ == "__main__":
                             for i in range(4):
                                 cv2.circle(img_tmp, tuple(pt_2d[i].astype(int)), 5, (0, 255, 0), -1)
 
-                    os.makedirs(os.path.join(root_path, "reproj", serial_num), exist_ok=True)
-                    cv2.imwrite(os.path.join(root_path, "reproj", serial_num, f"{fid:05d}.jpeg"), img_tmp)
+                    os.makedirs(os.path.join(root_path, "reproj_offset", serial_num), exist_ok=True)
+                    cv2.imwrite(os.path.join(root_path, "reproj_offset", serial_num, f"{fid:05d}.jpeg"), img_tmp)
                     # img_list[serial_num] = img_tmp
                 # if len(img_list) == 0:
                 #     continue

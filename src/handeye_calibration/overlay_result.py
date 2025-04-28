@@ -8,7 +8,7 @@ import os
 import pickle
 
 import open3d as o3d
-
+import time
 from dex_robot.utils.file_io import shared_path, load_camparam, load_c2r
 from dex_robot.renderer.scene import Scene
 from dex_robot.renderer.vis_utils import load_ply_as_pytorch3d_mesh
@@ -18,6 +18,8 @@ from dex_robot.renderer.renderer_utils import Batched_RGB_Silhouette_Renderer, c
 from dex_robot.renderer.robot_module import robot_info, robot_asset_file, Robot_Module
 import torch
 from paradex.utils.io import find_latest_directory
+import tqdm
+import pyrender
 
 device = torch.device("cuda:0")
 
@@ -94,7 +96,8 @@ if __name__ == "__main__":
     renderer_list, cam_id_list_list = get_renderer(intrinsic, extrinsic)
 
     index_list = os.listdir(os.path.join(shared_path, 'handeye_calibration', name))
-    for index in index_list:
+    for index in tqdm.tqdm(index_list):
+        start_time = time.time()
         robot_traj = np.load(os.path.join(shared_path, 'handeye_calibration', name, index, 'robot.npy')).reshape((1, 22))
         robot_module = Robot_Module(state = robot_traj)
         mesh_list = robot_module.get_mesh(0, c2r)
@@ -108,9 +111,12 @@ if __name__ == "__main__":
 
         combined_mesh.paint_uniform_color([1.0, 0.0, 0.0])
         combined_mesh_py3d, _,_,_ = convert_mesho3d2py3d(combined_mesh, device)
+        print("Conversion time: ", time.time() - start_time)
         with torch.no_grad():
             for cam_id_list, renderer in zip(cam_id_list_list, renderer_list):
+                start_time = time.time()
                 rendered_rgb_batch, rendered_silhouette = renderer.render(combined_mesh_py3d)
+                print("Rendering time: ", time.time() - start_time)
                 for i, cam_id in enumerate(cam_id_list):
                     rendered_rgb = rendered_rgb_batch[i].cpu().numpy() * 255
                     rendered_rgb = rendered_rgb.astype(np.uint8)
@@ -132,5 +138,5 @@ if __name__ == "__main__":
                     ).astype(np.uint8)
 
                     # 저장
-                    os.makedirs(os.path.join(shared_path, 'handeye_calibration', name, index, 'debug'), exist_ok=True)
-                    cv2.imwrite(os.path.join(shared_path, 'handeye_calibration', name, index, 'debug', f'{cam_id}.png'), combined_rgb)
+                    os.makedirs(os.path.join(shared_path, 'handeye_calibration', name, index, 'overlay'), exist_ok=True)
+                    cv2.imwrite(os.path.join(shared_path, 'handeye_calibration', name, index, 'overlay', f'{cam_id}.png'), combined_rgb)

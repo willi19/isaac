@@ -23,25 +23,8 @@ import transforms3d as t3d
 hand_name = "allegro"
 arm_name = "xarm"
 
-home_wrist_pose = np.array([[0, 1 ,0, 0.5],[0, 0, 1, -0.3],[1, 0, 0, 0.1],[0, 0, 0, 1]])
-
-def load_homepose(hand_name):
-    if hand_name == "allegro":
-        return  np.load("data/home_pose/allegro_hand_joint_angle.npy")
-    elif hand_name == "inspire":
-        return np.zeros(6)+1000
-    
-
-def homo2cart(h):
-    if h.shape == (4, 4):
-        t = h[:3, 3]
-        R = h[:3, :3]
-
-        axis, angle = t3d.axangles.mat2axangle(R)
-        axis_angle = axis * angle
-    else:
-        raise ValueError("Invalid input shape.")
-    return np.concatenate([t, axis_angle])
+home_wrist_pose = np.load("data/home_pose/allegro_eef_frame.npy")
+home_qpos = np.load("data/home_pose/allegro_robot_action.npy")
 
 def listen_for_exit(stop_event):
     """Listens for 'q' key input to safely exit all processes."""
@@ -65,14 +48,11 @@ def copy_calib_files(save_path):
     shutil.copyfile(handeye_calib_path, os.path.join(save_path, "C2R.npy"))
     shutil.copytree(camparam_path, os.path.join(save_path, "cam_param"))
 
-
 def load_savepath(name):
     if name == None:
         return None
     index = int(find_latest_index(os.path.join(capture_path, name)))+1
     return os.path.join(capture_path, name, str(index))
-
-
 
 def initialize_teleoperation(save_path):
     controller = {}
@@ -92,50 +72,101 @@ def initialize_teleoperation(save_path):
         controller["hand"] = InspireController(save_path)
     
     
-    controller["xsens"] = XSensReceiver()
-
     return controller
+
+def homo2cart(h):
+    if h.shape == (4, 4):
+        t = h[:3, 3]
+        R = h[:3, :3]
+
+        axis, angle = t3d.axangles.mat2axangle(R)
+        axis_angle = axis * angle
+    else:
+        raise ValueError("Invalid input shape.")
+    return np.concatenate([t, axis_angle])
+
+
+traj_start = []
+traj_end = []
+
+traj_start.append(homo2cart(home_wrist_pose))
+traj_end.append(np.array([ 0.5,   0.15 , 0.08 ,-1.2 ,-1.6 ,-1.5]))
+
+traj_start.append(np.array([ 0.5,   -0.1 , 0.12568464 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+traj_end.append(np.array([ 0.5,   0.1 , 0.12568464 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+
+traj_start.append(np.array([ 0.4,   0.0 , 0.12 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+traj_end.append(np.array([ 0.6,   0.0 , 0.12 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+
+traj_start.append(np.array([ 0.5,   0.0 , 0.05 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+traj_end.append(np.array([ 0.5,   0.0 , 0.15 ,-1.00128184 ,-1.49969864 ,-1.37346572]))
+
+def get_test_traj(index, t):
+    # trajectory have length 30
+    ts = traj_start[index]
+    te = traj_end[index]
+
+    if index == 0:
+        pos = ts + min(1,(t / 10)) * (te - ts)
+    
+    elif index in [1, 2, 3]:
+        # 주기 10, 진폭 (te - ts), t는 실수 가능
+        A = (te - ts) / 2
+        mid = (ts + te) / 2
+        pos = mid + A * np.sin(2 * np.pi * t / 6)
+
+    return pos
+
+joint_limit = []
+
+joint_limit.append([-0.2, 0.2])
+joint_limit.append([-0.296, 1.71])
+
+def get_hand_traj(t):
+    hand_traj = np.zeros(16)
+
+    for fi in range(3):
+        for fj in range(2):
+            hand_traj[4*fi+fj] = (joint_limit[fj][0] + joint_limit[fj][1]) / 2 + \
+                np.sin(2 * np.pi * t / 6 + fi * np.pi / 4) * (joint_limit[fj][1] - joint_limit[fj][0]) / 2
+    return hand_traj
+
+def get_start_pose(index):
+    if index == 0:
+        return traj_start[index]
+    elif index in [1, 2, 3]:
+        return traj_start[index] + (traj_end[index] - traj_start[index]) / 2
 
 
 def main():
     parser = argparse.ArgumentParser(description="Teleoperation for real robot")
-    parser.add_argument("--name", type=str, help="Control mode for robot")
+    parser.add_argument("--name", type=str, help="Control mode for robot", default="TimeSync")
     args = parser.parse_args()
     
     os.makedirs(os.path.join(capture_path, args.name), exist_ok=True)
     save_path = load_savepath(args.name)
+
     print (f"save_path: {save_path}")
     sensors = initialize_teleoperation(save_path)
     
-    traj_cnt = 5
+    traj_cnt = 4
     stop_event = threading.Event()
 
-    input_thread = threading.Thread(target=listen_for_exit, args=(stop_event,))
-    input_thread.daemon = True  # Ensures the thread exits when the main program exits
-    input_thread.start()
-
-    retargetor = retarget.retargetor(arm_name=arm_name, hand_name=hand_name, home_arm_pose=home_wrist_pose)
-
-    homepose_cnt = 0
-    grasp_range = {}
-
-    home_hand_pose = load_homepose(hand_name)
     activate_range = {}
-    
+
+    home_hand_pose = get_hand_traj(0)
+
     for count in range(traj_cnt):
         activate_range[count] = []
         activate_start_time = -1
-        activate_end_time = -1
-    
-        if stop_event.is_set():
-            break
-
+        
+        start_pose = get_start_pose(count)
         if hand_name is not None:
             sensors["hand"].set_homepose(home_hand_pose)
             sensors["hand"].home_robot()
             
         if arm_name is not None:
-            sensors["arm"].set_homepose(homo2cart(home_wrist_pose))
+            sensors["arm"].set_homepose(start_pose)
             sensors["arm"].home_robot()
 
             # alarm during homing
@@ -146,67 +177,29 @@ def main():
                     home_start_time = time.time()
                 time.sleep(0.0008)
             chime.success()
-        retargetor.reset()
+
         print("count: =========", count)
         print("Robot homed.")
 
-        grasp_range[count] = {"grasp_start":-1, "grasp_end":-1}
-
+        activate_start_time = time.time()
         while not stop_event.is_set():
-            try:
-                data = sensors["xsens"].get_data()
-                state = data["state"]
-                if state == -1: # Xsens not ready
-                    continue
-
-                if state == 0 or state == 3:
-                    if activate_start_time == -1:
-                        activate_start_time = time.time()
-
-                    arm_action, hand_action = retargetor.get_action(data)
-
-                if state == 3:
-                    if grasp_range[count]["grasp_start"] == -1:
-                        grasp_range[count]["grasp_start"] = time.time()
-                
-                if state != 3 and grasp_range[count]["grasp_start"] != -1:
-                    grasp_range[count]["grasp_end"] = time.time()    
-                
-                if state == 1 or state == 2:
-                    if activate_start_time != -1 and activate_end_time == -1:
-                        activate_end_time = time.time()
-                        activate_range[count].append((activate_start_time, activate_end_time))
-                        activate_start_time = -1
-                        activate_end_time = -1
-
-                if state == 1:
-                    retargetor.pause()
-                    continue
-
-                if state == 2:
-                    homepose_cnt += 1
-                    if homepose_cnt > 30:
-                        homepose_cnt = 0
-                        arm_action, hand_action = homo2cart(home_wrist_pose), home_hand_pose
-                        break
-                    
-                else:
-                    homepose_cnt = 0
-
-                if arm_name is not None:                
-                    sensors["arm"].set_target_action(
-                                    arm_action
-                            )
-                if hand_name is not None and state != 3:
-                    sensors["hand"].set_target_action(
-                                    hand_action
-                                )
-            except Exception as e:
-                print(f"Error: {e}")
+            t = time.time() - activate_start_time
+            arm_action, hand_action = get_test_traj(count, t), get_hand_traj(t)
+            
+            if t > 20:
                 break
+                
+            if arm_name is not None:                
+                sensors["arm"].set_target_action(
+                                arm_action
+                        )
+            if hand_name is not None:
+                sensors["hand"].set_target_action(
+                                hand_action
+                            )
+        activate_range[count].append([activate_start_time, time.time()])
             
     if save_path != None:
-        json.dump(grasp_range, open(os.path.join(save_path, "grasp_range.json"), 'w'))
         json.dump(activate_range, open(os.path.join(save_path, "activate_range.json"), 'w'))
         copy_calib_files(save_path)
 

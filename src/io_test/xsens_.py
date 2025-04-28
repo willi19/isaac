@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
         pose_data = data["hand_pose"]        
         state = data["state"]
-        print(pose_data[0], pose_data[6][:3,3])
+        # print(pose_data[0], pose_data[6][:3,3])
         # for i in range(1,20):
         #     pose_data[i] = np.linalg.inv(pose_data[0]) @ pose_data[i]
         # pose_data[0] = np.eye(4)

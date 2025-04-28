@@ -23,7 +23,9 @@ import transforms3d as t3d
 hand_name = "allegro"
 arm_name = "xarm"
 
-home_wrist_pose = np.array([[0, 1 ,0, 0.5],[0, 0, 1, -0.3],[1, 0, 0, 0.1],[0, 0, 0, 1]])
+home_wrist_pose = np.load("data/home_pose/allegro_eef_frame.npy")
+home_qpos = np.load("data/home_pose/allegro_robot_action.npy")
+
 
 def load_homepose(hand_name):
     if hand_name == "allegro":
@@ -117,18 +119,14 @@ def main():
     retargetor = retarget.retargetor(arm_name=arm_name, hand_name=hand_name, home_arm_pose=home_wrist_pose)
 
     homepose_cnt = 0
-    grasp_range = {}
+    activate_range = {}
 
     home_hand_pose = load_homepose(hand_name)
-    activate_range = {}
     
     for count in range(traj_cnt):
         activate_range[count] = []
         activate_start_time = -1
         activate_end_time = -1
-    
-        if stop_event.is_set():
-            break
 
         if hand_name is not None:
             sensors["hand"].set_homepose(home_hand_pose)
@@ -150,63 +148,49 @@ def main():
         print("count: =========", count)
         print("Robot homed.")
 
-        grasp_range[count] = {"grasp_start":-1, "grasp_end":-1}
-
         while not stop_event.is_set():
-            try:
-                data = sensors["xsens"].get_data()
-                state = data["state"]
-                if state == -1: # Xsens not ready
-                    continue
+            
+            data = sensors["xsens"].get_data()
+            state = data["state"]
+            if state == -1: # Xsens not ready
+                continue
 
-                if state == 0 or state == 3:
-                    if activate_start_time == -1:
-                        activate_start_time = time.time()
+            if state == 0:
+                if activate_start_time == -1:
+                    activate_start_time = time.time()
 
-                    arm_action, hand_action = retargetor.get_action(data)
+                arm_action, hand_action = retargetor.get_action(data)
+            
+            else: # Saving timing which robot is activated
+                if activate_start_time != -1 and activate_end_time == -1:
+                    activate_end_time = time.time()
+                    activate_range[count].append((activate_start_time, activate_end_time))
+                    activate_start_time = -1
+                    activate_end_time = -1
 
-                if state == 3:
-                    if grasp_range[count]["grasp_start"] == -1:
-                        grasp_range[count]["grasp_start"] = time.time()
-                
-                if state != 3 and grasp_range[count]["grasp_start"] != -1:
-                    grasp_range[count]["grasp_end"] = time.time()    
-                
-                if state == 1 or state == 2:
-                    if activate_start_time != -1 and activate_end_time == -1:
-                        activate_end_time = time.time()
-                        activate_range[count].append((activate_start_time, activate_end_time))
-                        activate_start_time = -1
-                        activate_end_time = -1
+            if state == 1:
+                retargetor.pause()
+                continue
 
-                if state == 1:
-                    retargetor.pause()
-                    continue
-
-                if state == 2:
-                    homepose_cnt += 1
-                    if homepose_cnt > 30:
-                        homepose_cnt = 0
-                        arm_action, hand_action = homo2cart(home_wrist_pose), home_hand_pose
-                        break
-                    
-                else:
+            if state == 2:
+                homepose_cnt += 1
+                if homepose_cnt > 30:
                     homepose_cnt = 0
+                    break
+                
+            else:
+                homepose_cnt = 0
 
-                if arm_name is not None:                
-                    sensors["arm"].set_target_action(
-                                    arm_action
+            if arm_name is not None:                
+                sensors["arm"].set_target_action(
+                                arm_action
+                        )
+            if hand_name is not None:
+                sensors["hand"].set_target_action(
+                                hand_action
                             )
-                if hand_name is not None and state != 3:
-                    sensors["hand"].set_target_action(
-                                    hand_action
-                                )
-            except Exception as e:
-                print(f"Error: {e}")
-                break
             
     if save_path != None:
-        json.dump(grasp_range, open(os.path.join(save_path, "grasp_range.json"), 'w'))
         json.dump(activate_range, open(os.path.join(save_path, "activate_range.json"), 'w'))
         copy_calib_files(save_path)
 

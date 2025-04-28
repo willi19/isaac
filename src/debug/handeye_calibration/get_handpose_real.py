@@ -252,6 +252,10 @@ if __name__ == "__main__":
     theta, b_x = Calibrate(A_list, B_list)
     X[0:3, 0:3] = theta
     X[0:3, -1] = b_x.flatten()
+
+    link6 = robot.get_link_pose(link_index)
+    wrist = robot.get_link_pose(wrist_index)
+    print(np.linalg.inv(link6) @ wrist)
     # print(X, c2r)
     for i in range(len(A_list)):
         err = A_list[i] @ X - X @ B_list[i]

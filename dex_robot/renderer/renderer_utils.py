@@ -235,7 +235,7 @@ class Batched_RGB_Silhouette_Renderer:
                     self.extrinsics[:,:3, 3].clone().detach().float().to(device).requires_grad_(False)
         
         sigma = 1e-8
-        blur_radius=np.log(1. / 1e-4 - 1.)*sigma # or 0
+        blur_radius= 0 # or np.log(1. / 1e-4 - 1.)*sigma 
         cammtx = self.intrinsics.clone().detach().float().to(device).requires_grad_(False)
         # torch.tensor(self.intrinsics,  device=device, dtype=torch.float32)
         

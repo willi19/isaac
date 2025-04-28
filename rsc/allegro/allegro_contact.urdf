@@ -121,7 +121,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/palm_link.obj"/>
+        <mesh filename="meshes/palm_link.obj"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0 "/>
       <material name="Grey">
@@ -131,7 +131,7 @@
     <collision>
       <origin rpy="0.0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/allegro/palm_link.obj"/>
+        <mesh filename="meshes/palm_link.obj"/>
       </geometry>
     </collision>
   </link>
@@ -144,7 +144,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes/contact/palm.obj"/>
+        <mesh filename="meshes/contact_palm.obj"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0.0125 0.025 -0.065"/>
       <material name="Red">
@@ -167,7 +167,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes/contact/palm.obj"/>
+        <mesh filename="meshes/contact_palm.obj"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0.0125 -0.019 -0.065"/>
       <material name="Red">
@@ -190,7 +190,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes/contact/palm.obj"/>
+        <mesh filename="meshes/contact_palm.obj"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0.0125 -0.019 -0.105"/>
       <material name="Red">
@@ -212,7 +212,7 @@
   <link name="thumb_base">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_base.STL"/>
+        <mesh filename="meshes/thumb_base.STL"/>
       </geometry>
       <material name="black">
         <color rgba=".2 .2 .2 1"/>
@@ -220,7 +220,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_base.STL"/>
+        <mesh filename="meshes/thumb_base.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -239,7 +239,7 @@
   <link name="thumb_proximal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_proximal.STL"/>  
+        <mesh filename="meshes/thumb_proximal.STL"/>  
       </geometry>
       <material name="black">
         <color rgba=".2 .2 .2 1"/>
@@ -247,7 +247,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_proximal.STL"/>  
+        <mesh filename="meshes/thumb_proximal.STL"/>  
       </geometry>
     </collision>
     <inertial>
@@ -268,7 +268,7 @@
   <link name="thumb_medial">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_medial.STL"/>
+        <mesh filename="meshes/thumb_medial.STL"/>
       </geometry>
       <material name="black">
         <color rgba=".2 .2 .2 1"/>
@@ -276,7 +276,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_medial.STL"/>
+        <mesh filename="meshes/thumb_medial.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -297,7 +297,7 @@
   <link name="thumb_distal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_distal.STL"/>
+        <mesh filename="meshes/thumb_distal.STL"/>
       </geometry>
       <material name="black">
         <color rgba=".2 .2 .2 1"/>
@@ -305,7 +305,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_distal.STL"/>
+        <mesh filename="meshes/thumb_distal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -326,7 +326,7 @@
   <link name="thumb_tip">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/thumb_tip.STL"/>
+        <mesh filename="meshes/thumb_tip.STL"/>
       </geometry>
       <material name="white">
         <color rgba=".9 .9 .9 1"/>
@@ -351,13 +351,13 @@
   <link name="index_base">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -378,13 +378,13 @@
   <link name="index_proximal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0.027"/>
     </collision>
@@ -406,13 +406,13 @@
   <link name="index_medial">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -432,13 +432,13 @@
   <link name="index_distal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -459,7 +459,7 @@
   <link name="index_tip">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_tip.STL"/>
+        <mesh filename="meshes/primary_tip.STL"/>
       </geometry>
       <material name="white">
         <color rgba=".9 .9 .9 1"/>
@@ -485,13 +485,13 @@
   <link name="middle_base">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -511,13 +511,13 @@
   <link name="middle_proximal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -538,13 +538,13 @@
   <link name="middle_medial">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -565,13 +565,13 @@
   <link name="middle_distal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -591,7 +591,7 @@
   <link name="middle_tip">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_tip.STL"/>
+        <mesh filename="meshes/primary_tip.STL"/>
       </geometry>
       <material name="white">
         <color rgba=".9 .9 .9 1"/>
@@ -617,13 +617,13 @@
   <link name="ring_base">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_base.STL"/>
+        <mesh filename="meshes/primary_base.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -644,13 +644,13 @@
   <link name="ring_proximal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_proximal.STL"/>
+        <mesh filename="meshes/primary_proximal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -671,13 +671,13 @@
   <link name="ring_medial">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_medial.STL"/>
+        <mesh filename="meshes/primary_medial.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -698,13 +698,13 @@
   <link name="ring_distal">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
       <material name="black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="meshes/allegro/primary_distal.STL"/>
+        <mesh filename="meshes/primary_distal.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -725,7 +725,7 @@
   <link name="ring_tip">
     <visual>
       <geometry>
-        <mesh filename="meshes/allegro/primary_tip.STL"/>
+        <mesh filename="meshes/primary_tip.STL"/>
       </geometry>
       <material name="white">
         <color rgba=".9 .9 .9 1"/>

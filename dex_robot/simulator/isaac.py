@@ -423,7 +423,7 @@ class simulator:
         if self.fixed:
             robot_asset_file = "xarm6/xarm6_allegro_wrist_mounted_rotate.urdf"
         else:
-            robot_asset_file = "xarm6/allegro_contact.urdf"
+            robot_asset_file = "allegro/allegro_contact.urdf"
 
         if obj_name is not None:
             object_asset_file = f"{obj_name}/{obj_name}.urdf"
